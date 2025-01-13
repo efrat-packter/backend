@@ -1,5 +1,45 @@
 const imageRepo = require('../repositories/imageRepository')
 const path = require('path')
+const nodemailer = require("nodemailer");
+require('dotenv').config();  // Load environment variables
+
+const sendEmail = async (req, res) => {
+  const { name, phone, email, message } = req.body;
+
+  try {
+    console.log("HII")
+    // Configure your SMTP transporter (e.g., using Gmail)
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,  // Using environment variables
+        pass: process.env.EMAIL_PASS,  // Using environment variables
+      },
+    });
+
+    // Define email details
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Sender address
+      to: process.env.DESIGNER_EMAIL, // Designer's email address from environment variable
+      subject: "New Message from Website",
+      text: `You have a new message from ${name} (${phone}, ${email}):\n\n${message}`,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Failed to send email. Please try again later." });
+  }
+};
+
+
+
+
+
+
+
 const uploadImage = (req, res) => {
   try {
 
@@ -61,6 +101,7 @@ module.exports = {
   uploadImage,
   getParentImages,
   getChildImages, 
+  sendEmail
 }
 
 

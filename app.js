@@ -4,7 +4,9 @@ const path = require('path');
 const cors = require('cors');
 const multer=require('multer')
 const imageController = require('./controllers/imageController'); // Import your controller
+const PORT = process.env.PORT || 3000;
 
+const nodemailer = require("nodemailer")
 const app = express();
 app.use(express.json());
 // Enable CORS for the specified frontend origin
@@ -23,8 +25,10 @@ const storage = multer.diskStorage({
     cb(null, file.originalname); // Keep the original filename
   },
 });
-
 const upload = multer({ storage });
+app.post('/upload/send-email/',upload.none(), imageController.sendEmail);
+
+
 app.post('/upload', upload.single('image'), imageController.uploadImage);
 
 // Route to get all image filenames
