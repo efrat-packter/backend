@@ -24,13 +24,18 @@ function saveMetadata(metadata) {
 //   metadata.images.push(newImage);
 //   saveMetadata(metadata);
 // }
-function saveImage(imageName, imagePath, parentId = null) {
+function saveImage(imageName, imagePath, parent = null) {
   const metadata = loadMetadata();
+  if(parent==null)
+  {
+
+    parent=  Number(metadata.images.length + 1)
+  }
   const newImage = {
-    id: metadata.images.length + 1,
+    id: Number(metadata.images.length + 1),
     name: imageName,
     path: imagePath,
-    parentId
+parentId:Number(parent)
   };
   
   metadata.images.push(newImage);
@@ -40,13 +45,14 @@ function saveImage(imageName, imagePath, parentId = null) {
 
 function getParentImages() {
   const metadata = loadMetadata();
-  return metadata.images.filter((image) => image.parentId === null);
+  return metadata.images.filter((image) => image.parentId === image.id);
 }
 
 function getChildImages(parentId) {
-  
   const metadata = loadMetadata();
-  return metadata.images.filter((image) => image.parentId === parentId);
+ x= metadata.images.filter((image) => image.parentId===Number(parentId));
+ console.log(x)
+  return x;
 }
 
 

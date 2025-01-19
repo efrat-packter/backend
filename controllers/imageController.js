@@ -7,7 +7,7 @@ const sendEmail = async (req, res) => {
   const { name, phone, email, message } = req.body;
 
   try {
-    console.log("HII")
+
     // Configure your SMTP transporter (e.g., using Gmail)
     const transporter = nodemailer.createTransport({
       service: "gmail",
