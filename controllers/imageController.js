@@ -37,28 +37,75 @@ const sendEmail = async (req, res) => {
 
 
 
-
-
-
-const uploadImage = (req, res) => {
+const uploadImages = (req, res) => {
   try {
-
-    if (!req.file) {
-      return res.status(400).json({ error: 'No image file uploaded' });
+    if (!req.files || (!req.files.mainImage && !req.files.images)) {
+      return res.status(400).json({ error: 'No image files uploaded' });
     }
-    const parentId = req.body.parentId || null
-    const imageName = req.file.originalname;
-    imagePath = path.join('images', req.file.filename)
-    const savedImage = imageRepo.saveImage(imageName, imagePath, parentId)
-    // const imageData=req.file.path;
-    // imageRepo.saveImage(imageName, imageData)
 
-    res.status(200).json({ message: 'Image uploaded successfully', image: savedImage });
+    const title = req.body.title || '';
+    const text = req.body.text || '';
+
+    const savedImages = [];
+
+    // שמירת התמונה הראשית
+    let parentId = null;
+    if (req.files.mainImage && req.files.mainImage.length > 0) {
+      const mainFile = req.files.mainImage[0];
+      const imageName = mainFile.originalname;
+      const imagePath = path.join('images', mainFile.filename);
+
+      const mainImage = imageRepo.saveImage(imageName, imagePath, null, text, title); // בלי parentId
+      parentId = mainImage.id;
+
+      savedImages.push(mainImage);
+    }
+
+    // שמירת שאר התמונות
+    if (req.files.images && req.files.images.length > 0) {
+      req.files.images.forEach((file) => {
+        const imageName = file.originalname;
+        const imagePath = path.join('images', file.filename);
+
+        const image = imageRepo.saveImage(imageName, imagePath, parentId, '', ''); // בלי טקסט וכותרת
+        savedImages.push(image);
+      });
+    }
+
+    res.status(200).json({
+      message: 'Images uploaded successfully',
+      images: savedImages,
+    });
   } catch (error) {
-
     res.status(500).json({ error: error.message });
   }
-}
+};
+
+
+
+
+
+
+
+// const uploadImage = (req, res) => {
+//   try {
+
+//     if (!req.file) {
+//       return res.status(400).json({ error: 'No image file uploaded' });
+//     }
+//     const parentId = req.body.parentId || null
+//     const imageName = req.file.originalname;
+//     imagePath = path.join('images', req.file.filename)
+//     const savedImage = imageRepo.saveImage(imageName, imagePath, parentId)
+//     // const imageData=req.file.path;
+//     // imageRepo.saveImage(imageName, imageData)
+
+//     res.status(200).json({ message: 'Image uploaded successfully', image: savedImage });
+//   } catch (error) {
+
+//     res.status(500).json({ error: error.message });
+//   }
+// }
 const getParentImages=(req, res) => {
   try {
     const images = imageRepo.getParentImages();
@@ -79,29 +126,48 @@ const getChildImages =(req, res) => {
 }
 
 
-const getImages = (req, res) => {
-  const images = imageRepo.getAllImages();
-  res.status(200).json(images)
-}
+// const getImages = (req, res) => {
+//   const images = imageRepo.getAllImages();
+//   res.status(200).json(images)
+// }
 const getImage = (req, res) => {
   try {
-    const imageName = req.params.imageName
-    const imagePath = imageRepo.getImage(imageName)
-    res.sendFile(imagePath)
+    const imageId = req.params.id;
+    const image = imageRepo.getImage(imageId);
+    
+    if (!image) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+
+    res.json(image);
   } catch (error) {
-    res.status(404).json({ error: error.message }); // Return 404 if the image is not found
+    res.status(500).json({ error: error.message });
   }
+};
 
 
+const deleteImage=(req, res) => {
+
+  try {
+    const id = req.params.id
+
+   return imageRepo.deleteImage(id);
+    // res.status(200).json(images);
+    res.status(200).json(metadata.images); // Assuming metadata.images is the response
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 }
 
 module.exports = { 
-  getImages, 
+  // getImages, 
   getImage,  
-  uploadImage,
+  uploadImages,
   getParentImages,
   getChildImages, 
-  sendEmail
+  sendEmail,
+  deleteImage,
 }
 
 

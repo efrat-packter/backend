@@ -29,13 +29,20 @@ const upload = multer({ storage });
 app.post('/upload/send-email/',upload.none(), imageController.sendEmail);
 
 
-app.post('/upload', upload.single('image'), imageController.uploadImage);
+// app.post('/upload', upload.single('image'), imageController.uploadImage);
+// app.post('/upload', upload.array('images', 100), imageController.uploadImages); // Allow up to 10 images
+app.post('/upload', upload.fields([
+  { name: 'mainImage', maxCount: 1 },
+  { name: 'images', maxCount: 100 }
+]), imageController.uploadImages);
+
 
 // Route to get all image filenames
 app.get('/images/getParentImages', imageController.getParentImages);
 app.get('/images/getChildImages/:parenId', imageController.getChildImages);
+app.get('/images/getImage/:id', imageController.getImage);
 
-
+app.delete('/delete/:id', imageController.deleteImage)
 // Route to get a specific image by name
 // app.get('/images/:imageName', imageController.getImage);
 // Start the server
